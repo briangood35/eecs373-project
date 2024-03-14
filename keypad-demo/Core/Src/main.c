@@ -39,7 +39,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include <string.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "i2c-lcd.h"
@@ -106,140 +106,142 @@ uint8_t key;
 char read_keypad (void)
 {
 	/* Make ROW 1 LOW and all other ROWs HIGH */
-	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 1);  //Pull the R1 low
-	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 0);  // Pull the R2 High
-	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 0);  // Pull the R3 High
-	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 0);  // Pull the R4 High
+	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 0);  //Pull the R1 low
+	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 1);  // Pull the R2 High
+	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 1);  // Pull the R3 High
+	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 1);  // Pull the R4 High
 
-	if ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
+	if (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
 	{
-		while ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x31); // i
 		return '1';
 	}
 
-	if ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
+	if (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
 	{
-		while ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x32); // i
 		return '2';
 	}
 
-	if ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
+	if (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
 	{
-		while ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x33); // i
 		return '3';
 	}
 
-	if ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
+	if (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
 	{
-		while ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x41); // i
 		return 'A';
 	}
 
 	/* Make ROW 2 LOW and all other ROWs HIGH */
-	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 0);  //Pull the R1 low
-	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 1);  // Pull the R2 High
-	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 0);  // Pull the R3 High
-	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 0);  // Pull the R4 High
+	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 1);  //Pull the R1 low
+	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 0);  // Pull the R2 High
+	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 1);  // Pull the R3 High
+	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 1);  // Pull the R4 High
 
-	if ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
+	if (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
 	{
-		while ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x34); // i
 		return '4';
 	}
 
-	if ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
+	if (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
 	{
-		while ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x35); // i
 		return '5';
 	}
 
-	if ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
+	if (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
 	{
-		while ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x36); // i
 		return '6';
 	}
 
-	if ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
+	if (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
 	{
-		while ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x42); // i
 		return 'B';
 	}
 
 
 	/* Make ROW 3 LOW and all other ROWs HIGH */
-	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 0);  //Pull the R1 low
-	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 0);  // Pull the R2 High
-	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 1);  // Pull the R3 High
-	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 0);  // Pull the R4 High
+	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 1);  //Pull the R1 low
+	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 1);  // Pull the R2 High
+	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 0);  // Pull the R3 High
+	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 1);  // Pull the R4 High
 
-	if ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
+	if (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
 	{
-		while ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x37); // i
 		return '7';
 	}
 
-	if ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
+	if (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
 	{
-		while ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x38); // i
 		return '8';
 	}
 
-	if ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
+	if (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
 	{
-		while ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x39); // i
 		return '9';
 	}
 
-	if ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
+	if (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
 	{
-		while ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
 		return 'C';
 	}
 
 
 	/* Make ROW 4 LOW and all other ROWs HIGH */
-	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 0);  //Pull the R1 low
-	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 0);  // Pull the R2 High
-	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 0);  // Pull the R3 High
-	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 1);  // Pull the R4 High
+	HAL_GPIO_WritePin (R1_PORT, R1_PIN, 1);  //Pull the R1 low
+	HAL_GPIO_WritePin (R2_PORT, R2_PIN, 1);  // Pull the R2 High
+	HAL_GPIO_WritePin (R3_PORT, R3_PIN, 1);  // Pull the R3 High
+	HAL_GPIO_WritePin (R4_PORT, R4_PIN, 0);  // Pull the R4 High
 
-	if ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
+	if (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)))   // if the Col 1 is low
 	{
-		while ((HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C1_PORT, C1_PIN)));   // wait till the button is pressed
 		return '*';
 	}
 
-	if ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
+	if (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)))   // if the Col 2 is low
 	{
-		while ((HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C2_PORT, C2_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x30); // i
 		return '0';
 	}
 
-	if ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
+	if (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)))   // if the Col 3 is low
 	{
-		while ((HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C3_PORT, C3_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x23); // i
 		return '#';
 	}
 
-	if ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
+	if (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)))   // if the Col 4 is low
 	{
-		while ((HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
+		while (!(HAL_GPIO_ReadPin (C4_PORT, C4_PIN)));   // wait till the button is pressed
 		lcd_send_data(0x44); // i
 		return 'D';
 	}
+
+	return 0; // if returned, 0, we got an error
 
 }
 
@@ -282,31 +284,41 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 char real_password[8] = "28664#D";
-char nice = "69420";
+char nice[] = "69420";
+char pass[11] = "\0";
+int index = 0;
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  	char pass[11] = ""; // Initialize an empty password of size 10 because of Null
-	    char key;
-		key = read_keypad ();
+	  	 // Initialize an empty password of size 10 because of Null
+	    char key = 0;
+	    while (!key) {
+	    	key = read_keypad ();
+	    }
 		if (key != 'C' && key != '*' && strlen(pass) < 10) {
-		    strncat(pass, &key, 1); // Append the key to the string
+		    // Append the key to the string
+			pass[index++] = key;
+			pass[index] = '\0';
 		}
 		if (key == 'C'){
-			strcpy(pass, "");
+			pass[0] = '\0';
+			index = 0;
 			lcd_init();
   	  	  }
 		if (key == '*'){
-			if (strcmp(pass, nice), 5){
+			if (!strcmp(pass, nice)){
 				lcd_nice();
 			}
-			else if (strncmp(pass, real_password, 7) == 0) {
+			else if (!strcmp(pass, real_password)) {
 			     lcd_correct_pass();
 			} else {
 			     lcd_incorrect_pass();
 			}
+			pass[0] = '\0';
+			index = 0;
 			lcd_init();
 		}
 
