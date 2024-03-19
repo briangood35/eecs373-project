@@ -57,11 +57,11 @@ static void MX_USART3_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t rx_buf[8] = { 0 };
+uint8_t rx_buf[4] = { 0 };
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  HAL_UART_Receive_IT(&huart3, rx_buf, 8);
+  HAL_UART_Receive_IT(&huart3, rx_buf, 4);
   __NOP(); // set breakpoint here
 }
 

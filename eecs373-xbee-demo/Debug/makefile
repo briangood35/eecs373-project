@@ -60,8 +60,8 @@ all: main-build
 main-build: eecs373-xbee-demo.elf secondary-outputs
 
 # Tool invocations
-eecs373-xbee-demo.elf eecs373-xbee-demo.map: $(OBJS) $(USER_OBJS) /Users/briangood/Documents/projects/STM32CubeIDE-workspace/eecs373-xbee-demo/STM32L4R5ZITXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "eecs373-xbee-demo.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/briangood/Documents/projects/STM32CubeIDE-workspace/eecs373-xbee-demo/STM32L4R5ZITXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="eecs373-xbee-demo.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+eecs373-xbee-demo.elf eecs373-xbee-demo.map: $(OBJS) $(USER_OBJS) /Users/briangood/Documents/um/eecs373/project/eecs373-project/eecs373-xbee-demo/STM32L4R5ZITXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "eecs373-xbee-demo.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/briangood/Documents/um/eecs373/project/eecs373-project/eecs373-xbee-demo/STM32L4R5ZITXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="eecs373-xbee-demo.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
