@@ -57,14 +57,57 @@ static void MX_USART3_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t rx_buf[4] = { 0 };
+#define XBEE1_ADDR &huart3
+
+typedef struct xbee_frame_header {
+	uint8_t start_delim;
+	uint16_t length;
+	uint8_t frame_type;
+	uint8_t frame_id;
+	uint16_t dest_addr;
+	uint8_t options;
+} xbee_frame_header_t;
+
+void xbee_send_two_bytes(uint8_t *data, uint8_t *dest) {
+	uint8_t checksum = 0xFF;
+	xbee_frame_header_t header = {
+			.start_delim = 0x7E,
+			.length = 7, // num bytes between length and checksum
+			.frame_type = 0x01, // 16-bit transmit request
+			.frame_id = 0, // device will not emit a response frame
+			.dest_addr = 0xD161, // broadcast address
+			.options = 0, // no options set
+	};
+	checksum -= (header.frame_type + dest[0] + dest[1] + data[0] + data[1]);
+	uint8_t buf[] = {header.start_delim,
+					 0,
+					 header.length,
+					 header.frame_type,
+					 header.frame_id,
+					 dest[0], // dest_addr high bits
+					 dest[1], // dest_addr low bits
+					 header.options,
+					 data[0],
+					 data[1],
+					 checksum,
+	};
+	HAL_UART_Transmit(XBEE1_ADDR, buf, 11, 10000); // header + 2 data bytes + 1 checksum byte
+}
+
+uint8_t rx_buf[11] = { 0 };
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  HAL_UART_Receive_IT(&huart3, rx_buf, 4);
+  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
   __NOP(); // set breakpoint here
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	// this will trigger on blue push button (PC13)
+	uint8_t data[2] = {0x56, 0x78};
+	uint8_t dest[2] = {0x11, 0x11};
+	xbee_send_two_bytes(data, dest);
+}
 
 /* USER CODE END 0 */
 
@@ -99,7 +142,8 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_UART_Receive_IT(&huart3, rx_buf, 8);
+//  HAL_UART_Receive_IT(&huart3, rx_buf, 8);
+
 
   /* USER CODE END 2 */
 
@@ -237,6 +281,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF13_SAI1;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PF0 PF1 PF2 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
@@ -449,6 +499,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
