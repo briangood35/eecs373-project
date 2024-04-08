@@ -74,11 +74,11 @@ void xbee_send_two_bytes(uint8_t *data, uint8_t *dest) {
 			.start_delim = 0x7E,
 			.length = 7, // num bytes between length and checksum
 			.frame_type = 0x01, // 16-bit transmit request
-			.frame_id = 0, // device will not emit a response frame
+			.frame_id = 0x00, // device will not emit a response frame
 			.dest_addr = 0xD161, // broadcast address
 			.options = 0, // no options set
 	};
-	checksum -= (header.frame_type + dest[0] + dest[1] + data[0] + data[1]);
+	checksum -= (header.frame_type + header.frame_id + dest[0] + dest[1] + data[0] + data[1]);
 	uint8_t buf[] = {header.start_delim,
 					 0,
 					 header.length,
@@ -142,7 +142,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-//  HAL_UART_Receive_IT(&huart3, rx_buf, 8);
+  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
 
 
   /* USER CODE END 2 */
