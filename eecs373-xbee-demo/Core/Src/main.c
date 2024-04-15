@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +40,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
@@ -50,12 +51,15 @@ UART_HandleTypeDef huart3;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+volatile uint8_t rx_buf[100] = { 0 };
 
 #define XBEE1_ADDR &huart3
 
@@ -94,11 +98,90 @@ void xbee_send_two_bytes(uint8_t *data, uint8_t *dest) {
 	HAL_UART_Transmit(XBEE1_ADDR, buf, 11, 10000); // header + 2 data bytes + 1 checksum byte
 }
 
-uint8_t rx_buf[11] = { 0 };
+int ESP_connect_to_wifi(char *data) {
+//	HAL_UART_Receive_IT(&huart2, &rx_buf, strlen(data));
+	int ret = HAL_UART_Transmit(&huart2, (uint8_t*)data, strlen(data), 2500);
+	HAL_Delay(10000);
+	return ret;
+}
+
+int ESP_send_raw(uint8_t *data, uint16_t len) {
+	HAL_UART_Receive_IT(&huart2, &rx_buf, len);
+	int ret = HAL_UART_Transmit(&huart2, data, len, 1000);
+	HAL_Delay(1000);
+	return ret;
+}
+
+int ESP_send_string(char *data) {
+	return ESP_send_raw((uint8_t*)data, strlen(data));
+}
+
+void ESP8266_Init(void) {
+  char buffer[100];
+//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+RESTORE\r\n", strlen("AT+RESTORE\r\n"), 1000);
+//  HAL_Delay(2000);
+
+//  sprintf(buffer, "ATE0\r\n");
+//  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 1000);
+//  HAL_Delay(2000);
+
+  sprintf(buffer, "AT\r\n");
+  int ret;
+//  ret = HAL_UART_Transmit(&huart2, (uint8_t*)&buffer, strlen(buffer), 1000);
+
+  ESP_send_string("AT+RST\r\n");
+
+  ret = ESP_send_string(buffer);
+  if (ret != HAL_OK) {
+	  __NOP(); // breakppoint
+  }
+
+//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+RST\r\n", strlen("AT+RST\r\n"), 1000);
+//  HAL_Delay(2000);
+
+//  ESP_wait_for_OK();
+  ESP_send_string("AT+CWMODE_CUR=3\r\n");
+//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+CWMODE_CUR=1\r\n", strlen("AT+CWMODE_CUR=1\r\n"), 1000);
+//  HAL_Delay(2000);
+
+  sprintf(buffer, "AT+CWJAP=\"Beesechurger\",\"Leafs06Leafs06\"\r\n");
+  ESP_connect_to_wifi((char*)buffer);
+//  ESP_connect_to_wifi("Beesechurger", "Leafs06Leafs06");
+
+  sprintf(buffer, "AT+CIFSR=\"192.168.55.55\"\r\n");
+  ESP_send_string((char*)buffer);
+
+//  sprintf(buffer, "AT+CIPMUX=1\r\n");
+//  ESP_send_string((char*)buffer);
+//
+//  sprintf(buffer, "AT+CIPSERVER=1,88"); // start server on port 80
+//  ESP_send_string((char*)buffer);
+//  ESP_wait_for_OK();
+//  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 1000);
+//  HAL_Delay(2000);
+
+//  ESP8266_SendData("Hello World!");
+
+}
+
+void wifi_receive() {
+	static int num = 0;
+	num++;
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
+  static int index = 0;
+  if (huart == &huart3) {
+	  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
+  }
+  if (huart == &huart2) {
+//	  index = (index + 1) % (sizeof(rx_buf));
+//	  HAL_UART_Receive_IT(&huart2, &rx_buf[index], 1);
+//	  wifi_receive();
+	  __NOP(); // breakpoints
+//	  HAL_UART_Receive_IT(&huart2, rx_buf, 2);
+  }
   __NOP(); // set breakpoint here
 }
 
@@ -140,7 +223,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+//  HAL_UART_Receive_IT(&huart2, rx_buf, 1);
+  ESP8266_Init();
 
   HAL_UART_Receive_IT(&huart3, rx_buf, 11);
 
@@ -154,7 +241,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
+//	  ESP8266_SendData("Hello World!");
 	  //HAL_UART_Receive(&huart3, buf, 8, 100000); // ==HAL_OK
   }
   /* USER CODE END 3 */
@@ -202,6 +289,54 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart2, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart2, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
 }
 
 /**
@@ -466,14 +601,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF12_SDMMC1;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PD3 PD4 PD5 PD6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB3 PB4 PB5 */
