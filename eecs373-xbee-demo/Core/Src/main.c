@@ -99,13 +99,22 @@ void xbee_send_two_bytes(uint8_t *data, uint8_t *dest) {
 }
 
 int ESP_connect_to_wifi(char *data) {
-//	HAL_UART_Receive_IT(&huart2, &rx_buf, strlen(data));
+	memset(&rx_buf, 0, sizeof(rx_buf));
+	HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 27);
 	int ret = HAL_UART_Transmit(&huart2, (uint8_t*)data, strlen(data), 2500);
 	HAL_Delay(10000);
 	return ret;
 }
 
+int ESP_start_server(char *data) {
+	HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 27);
+	int ret = HAL_UART_Transmit(&huart2, (uint8_t*)data, strlen(data), 2500);
+	HAL_Delay(5000);
+	return ret;
+}
+
 int ESP_send_raw(uint8_t *data, uint16_t len) {
+	memset(&rx_buf, 0, sizeof(rx_buf));
 	HAL_UART_Receive_IT(&huart2, &rx_buf, len);
 	int ret = HAL_UART_Transmit(&huart2, data, len, 1000);
 	HAL_Delay(1000);
@@ -140,7 +149,7 @@ void ESP8266_Init(void) {
 //  HAL_Delay(2000);
 
 //  ESP_wait_for_OK();
-  ESP_send_string("AT+CWMODE_CUR=3\r\n");
+  ESP_send_string("AT+CWMODE_CUR=1\r\n");
 //  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+CWMODE_CUR=1\r\n", strlen("AT+CWMODE_CUR=1\r\n"), 1000);
 //  HAL_Delay(2000);
 
@@ -148,14 +157,20 @@ void ESP8266_Init(void) {
   ESP_connect_to_wifi((char*)buffer);
 //  ESP_connect_to_wifi("Beesechurger", "Leafs06Leafs06");
 
-  sprintf(buffer, "AT+CIFSR=\"192.168.55.55\"\r\n");
+  HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 75);
+  sprintf(buffer, "AT+CIFSR\r\n");
   ESP_send_string((char*)buffer);
 
-//  sprintf(buffer, "AT+CIPMUX=1\r\n");
 //  ESP_send_string((char*)buffer);
+
+  sprintf(buffer, "AT+CIPMUX=0\r\n"); // set to 1 for multiple connection
+  ESP_send_string((char*)buffer);
 //
-//  sprintf(buffer, "AT+CIPSERVER=1,88"); // start server on port 80
-//  ESP_send_string((char*)buffer);
+  sprintf(buffer, "AT+CIPSERVER=1\r\n"); // start server on port 333
+  ESP_send_string((char*)buffer);
+
+  sprintf(buffer, "AT+CIPSERVER=1\r\n"); // start server on port 333
+  ESP_send_string((char*)buffer);
 //  ESP_wait_for_OK();
 //  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 1000);
 //  HAL_Delay(2000);
