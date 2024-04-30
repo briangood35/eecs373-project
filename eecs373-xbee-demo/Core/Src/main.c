@@ -36,7 +36,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -59,7 +58,8 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-volatile uint8_t rx_buf[100] = { 0 };
+
+//volatile uint8_t rx_buf[100] = { 0 };
 
 #define XBEE1_ADDR &huart3
 
@@ -98,106 +98,29 @@ void xbee_send_two_bytes(uint8_t *data, uint8_t *dest) {
 	HAL_UART_Transmit(XBEE1_ADDR, buf, 11, 10000); // header + 2 data bytes + 1 checksum byte
 }
 
-int ESP_connect_to_wifi(char *data) {
-	memset(&rx_buf, 0, sizeof(rx_buf));
-	HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 27);
-	int ret = HAL_UART_Transmit(&huart2, (uint8_t*)data, strlen(data), 2500);
-	HAL_Delay(10000);
-	return ret;
-}
 
-int ESP_start_server(char *data) {
-	HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 27);
-	int ret = HAL_UART_Transmit(&huart2, (uint8_t*)data, strlen(data), 2500);
-	HAL_Delay(5000);
-	return ret;
-}
-
-int ESP_send_raw(uint8_t *data, uint16_t len) {
-	memset(&rx_buf, 0, sizeof(rx_buf));
-	HAL_UART_Receive_IT(&huart2, &rx_buf, len);
-	int ret = HAL_UART_Transmit(&huart2, data, len, 1000);
-	HAL_Delay(1000);
-	return ret;
-}
-
-int ESP_send_string(char *data) {
-	return ESP_send_raw((uint8_t*)data, strlen(data));
-}
-
-void ESP8266_Init(void) {
-  char buffer[100];
-//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+RESTORE\r\n", strlen("AT+RESTORE\r\n"), 1000);
-//  HAL_Delay(2000);
-
-//  sprintf(buffer, "ATE0\r\n");
-//  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 1000);
-//  HAL_Delay(2000);
-
-  sprintf(buffer, "AT\r\n");
-  int ret;
-//  ret = HAL_UART_Transmit(&huart2, (uint8_t*)&buffer, strlen(buffer), 1000);
-
-  ESP_send_string("AT+RST\r\n");
-
-  ret = ESP_send_string(buffer);
-  if (ret != HAL_OK) {
-	  __NOP(); // breakppoint
-  }
-
-//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+RST\r\n", strlen("AT+RST\r\n"), 1000);
-//  HAL_Delay(2000);
-
-//  ESP_wait_for_OK();
-  ESP_send_string("AT+CWMODE_CUR=1\r\n");
-//  HAL_UART_Transmit(&huart2, (uint8_t*)"AT+CWMODE_CUR=1\r\n", strlen("AT+CWMODE_CUR=1\r\n"), 1000);
-//  HAL_Delay(2000);
-
-  sprintf(buffer, "AT+CWJAP=\"Beesechurger\",\"Leafs06Leafs06\"\r\n");
-  ESP_connect_to_wifi((char*)buffer);
-//  ESP_connect_to_wifi("Beesechurger", "Leafs06Leafs06");
-
-  HAL_UARTEx_ReceiveToIdle_IT(&huart2, &rx_buf, 75);
-  sprintf(buffer, "AT+CIFSR\r\n");
-  ESP_send_string((char*)buffer);
-
-//  ESP_send_string((char*)buffer);
-
-  sprintf(buffer, "AT+CIPMUX=0\r\n"); // set to 1 for multiple connection
-  ESP_send_string((char*)buffer);
-//
-  sprintf(buffer, "AT+CIPSERVER=1\r\n"); // start server on port 333
-  ESP_send_string((char*)buffer);
-
-  sprintf(buffer, "AT+CIPSERVER=1\r\n"); // start server on port 333
-  ESP_send_string((char*)buffer);
-//  ESP_wait_for_OK();
-//  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, strlen(buffer), 1000);
-//  HAL_Delay(2000);
-
-//  ESP8266_SendData("Hello World!");
-
-}
-
-void wifi_receive() {
-	static int num = 0;
-	num++;
-}
-
+char wifi_buf[32];
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-  static int index = 0;
-  if (huart == &huart3) {
-	  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
-  }
+//  static int index = 0;
+//  if (huart == &huart3) {
+//	  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
+//  }
   if (huart == &huart2) {
-//	  index = (index + 1) % (sizeof(rx_buf));
-//	  HAL_UART_Receive_IT(&huart2, &rx_buf[index], 1);
-//	  wifi_receive();
-	  __NOP(); // breakpoints
-//	  HAL_UART_Receive_IT(&huart2, rx_buf, 2);
+	  if (!strcmp(wifi_buf, "unlock_box_\r\n")) {
+		  uint8_t data = {0x01, 0x00};
+		  uint8_t dest = {0x11, 0x11};
+		  xbee_send_two_bytes(data, dest);
+		  __NOP(); // breakpoint
+	  }
+	  if (!strcmp(wifi_buf, "lock_box___\r\n")) {
+		  uint8_t data = {0x01, 0x00};
+		  uint8_t dest = {0x11, 0x11};
+		  xbee_send_two_bytes(data, dest);
+		  __NOP();
+	  }
+	  HAL_UART_Receive_IT(&huart2, wifi_buf, 13); // 11 chars plus \0\r\nnull terminator for strcmp
   }
-  __NOP(); // set breakpoint here
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -242,9 +165,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 //  HAL_UART_Receive_IT(&huart2, rx_buf, 1);
-  ESP8266_Init();
 
-  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
+  HAL_UART_Receive_IT(&huart2, wifi_buf, 13);
+//  HAL_UART_Receive_IT(&huart3, rx_buf, 11);
 
 
   /* USER CODE END 2 */
